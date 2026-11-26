@@ -7,3 +7,5 @@ node_modules/
 next-env.d.ts
 .vitest/
 tests/e2e/comprovante.png
+.vercel
+.senha-producao.txt

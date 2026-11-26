@@ -1,0 +1,7 @@
+node_modules
+.next
+.data
+.vitest
+.env*
+.senha-producao.txt
+tests/e2e/comprovante.png

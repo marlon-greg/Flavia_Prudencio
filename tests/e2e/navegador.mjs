@@ -5,7 +5,7 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 
 const BASE = process.env.BASE_URL || "http://localhost:3123";
-const SENHA = "studio2026";
+const SENHA = process.env.SENHA || "studio2026";
 const res = [];
 const ok = (nome, cond, info = "") => { res.push({ nome, ok: !!cond, info }); console.log(cond ? "PASSOU" : "FALHOU", "|", nome, info ? `| ${info}` : ""); };
 const arq = new URL("./comprovante.png", import.meta.url).pathname;
