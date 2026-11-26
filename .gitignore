@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.data/
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+.vitest/
+tests/e2e/comprovante.png
