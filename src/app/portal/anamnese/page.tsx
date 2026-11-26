@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { anamneses } from "@/db/schema";
 import { alunoDaSessao } from "@/lib/auth";
 import { AcaoForm } from "@/components/AcaoForm";
+import { Cabecalho } from "@/components/Topo";
 import { acaoAnamnese } from "../../acoes";
 
 const PERGUNTAS: [string, string][] = [
@@ -19,20 +20,20 @@ export default async function Anamnese() {
   const [a] = await (await getDb()).select().from(anamneses).where(eq(anamneses.alunoId, aluno.id));
   const r = (a?.respostas ?? {}) as Record<string, string>;
   return (
-    <div className="card" style={{ maxWidth: 720 }}>
-      <h1 style={{ fontSize: "1.5rem" }}>Anamnese</h1>
-      <p className="muted small">
-        {a ? `Preenchida em ${a.criadoEm.toLocaleDateString("pt-BR")}. Você pode atualizar quando quiser.`
-           : "Obrigatória antes do primeiro agendamento."}
-      </p>
-      <AcaoForm acao={acaoAnamnese} limpar={false}>
-        {PERGUNTAS.map(([k, q]) => (
-          <label key={k}>{q}<textarea name={k} defaultValue={r[k] ?? ""} required={k === "objetivo"} /></label>
-        ))}
-        <label><input type="checkbox" name="ciente" value="sim" defaultChecked={r.ciente === "sim"} required />
-          Declaro que as informações acima são verdadeiras.</label>
-        <button className="btn">Salvar anamnese</button>
-      </AcaoForm>
+    <div style={{ maxWidth: 760 }}>
+      <Cabecalho rotulo="Anamnese" titulo="Sua ficha de saúde"
+        sub={a ? `Preenchida em ${a.criadoEm.toLocaleDateString("pt-BR")}. Você pode atualizar quando quiser.`
+          : "Obrigatória antes do primeiro agendamento. Leva cerca de 5 minutos."} />
+      <div className="card" style={{ padding: 28 }}>
+        <AcaoForm acao={acaoAnamnese} limpar={false}>
+          {PERGUNTAS.map(([k, q], i) => (
+            <label key={k}><span className="muted">{i + 1}.</span> {q}<textarea name={k} defaultValue={r[k] ?? ""} required={k === "objetivo"} /></label>
+          ))}
+          <label style={{ display: "flex", alignItems: "center" }}><input type="checkbox" name="ciente" value="sim" defaultChecked={r.ciente === "sim"} required />
+            Declaro que as informações acima são verdadeiras.</label>
+          <button className="btn">Salvar anamnese</button>
+        </AcaoForm>
+      </div>
     </div>
   );
 }

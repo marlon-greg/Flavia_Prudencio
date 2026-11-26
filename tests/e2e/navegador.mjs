@@ -96,7 +96,8 @@ ok("RF08 WhatsApp no portal", (await b.locator("a.whats").getAttribute("href")).
 const a = await novaPagina();
 await login(a, "ana@studio.local");
 const antesCanc = await a.locator("summary:has-text('Cancelar esta aula')").count();
-await a.locator("summary:has-text('Cancelar esta aula')").first().click();
+// A última da lista é a mais distante: assim o teste não depende de rodar a mais de 60 min da próxima aula (RN02).
+await a.locator("summary:has-text('Cancelar esta aula')").last().click();
 await a.locator("details[open] input[name=motivo]").fill("Viagem");
 await a.locator("details[open] button:has-text('Confirmar cancelamento')").click();
 ok("RF05 cancelamento com mais de 60 min, sem atestado: aceito", (await msg(a)).includes("cancelada"));
@@ -124,9 +125,9 @@ const hoje = new Date(Date.now() - 3 * 3600e3);
 const t = new Date(hoje); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() - 2 + 7) % 7));
 const terca = t.toISOString().slice(0, 10);
 await r.goto(`${BASE}/admin?data=${terca}`);
-const aula9 = r.locator(".card.aula", { has: r.locator(".hora", { hasText: "09:00" }) });
-ok("RF09 grade diária mostra a turma das 09:00 com 4/4", (await aula9.locator(".cab .tag").textContent()).trim() === "4/4");
-await aula9.locator(".lugar", { hasText: "Ana Beatriz" }).locator("button:has-text('Marcar falta')").click();
+const aula9 = r.locator(".grade-linha.aula", { has: r.locator(".hora", { hasText: "09h" }) });
+ok("RF09 grade diária mostra a turma das 09:00 com 4/4", (await aula9.locator(".tag.ocupacao").textContent()).trim() === "4/4");
+await aula9.locator(".vaga", { hasText: "Ana Beatriz" }).locator("button:has-text('Marcar falta')").click();
 ok("RF10 falta registrada", (await msg(r)).includes("Falta registrada"));
 await a.goto(`${BASE}/portal`);
 ok("RN03 falta aparece no portal da aluna", (await a.locator(".tag.falta").count()) >= 1);
