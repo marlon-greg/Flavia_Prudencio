@@ -1,4 +1,4 @@
-export const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || "5519999999999"; // definir o número real em NEXT_PUBLIC_WHATSAPP
+export const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || "5519991574555"; // número do studio; NEXT_PUBLIC_WHATSAPP substitui, se definido
 export const linkWhats = (texto: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
 
 export const reais = (centavos: number) =>
