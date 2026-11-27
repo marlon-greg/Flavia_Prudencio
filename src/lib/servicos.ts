@@ -6,7 +6,7 @@ import {
   alunos, anamneses, aulas, caixa, horarios, matriculas, pagamentos, planos,
   preMatriculas, reservas, usuarios,
 } from "@/db/schema";
-import { hashSenha } from "./senha";
+import { conferirSenha, hashSenha } from "./senha";
 
 export class RegraError extends Error {
   constructor(public codigo: string, mensagem: string) { super(mensagem); }
@@ -286,6 +286,14 @@ export async function criarFuncionario(db: DB, d: { nome: string; email: string;
   if (ja) throw new RegraError("email_em_uso", "Já existe um usuário com esse e-mail.");
   const [u] = await db.insert(usuarios).values({ nome: d.nome, email, senhaHash: await hashSenha(d.senha), perfil: d.perfil }).returning();
   return u;
+}
+
+export async function trocarSenha(db: DB, usuarioId: number, atual: string, nova: string) {
+  const [u] = await db.select().from(usuarios).where(eq(usuarios.id, usuarioId));
+  if (!u || !(await conferirSenha(atual, u.senhaHash))) throw new RegraError("senha_atual", "A senha atual está incorreta.");
+  if (nova.length < 8) throw new RegraError("senha_fraca", "A senha precisa ter pelo menos 8 caracteres.");
+  if (nova === atual) throw new RegraError("senha_igual", "A nova senha precisa ser diferente da atual.");
+  await db.update(usuarios).set({ senhaHash: await hashSenha(nova) }).where(eq(usuarios.id, usuarioId));
 }
 
 export async function definirAtivo(db: DB, usuarioId: number, ativo: boolean, quemFaz: number) {

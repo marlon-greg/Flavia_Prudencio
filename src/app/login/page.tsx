@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CampoEmail, CampoSenha } from "@/components/Campos";
 import { redirect } from "next/navigation";
 import { Marca } from "@/components/Topo";
 import { Icone } from "@/components/Icone";
@@ -19,8 +20,8 @@ export default async function Login() {
         <h1 style={{ fontSize: "1.65rem", marginBottom: 6 }}>Entrar</h1>
         <p className="muted small" style={{ marginTop: 0 }}>Alunos, recepção e proprietária usam o mesmo acesso.</p>
         <AcaoForm acao={acaoLogin} limpar={false}>
-          <label>E-mail<input name="email" type="email" required autoComplete="username" placeholder="seu@email.com" /></label>
-          <label>Senha<input name="senha" type="password" required autoComplete="current-password" placeholder="••••••••" /></label>
+          <label>E-mail<CampoEmail name="email" required autoComplete="username" placeholder="seu@email.com" /></label>
+          <label>Senha<CampoSenha name="senha" required autoComplete="current-password" placeholder="••••••••" /></label>
           <button className="btn bloco">Entrar <Icone nome="arrow_right" tam={16} /></button>
         </AcaoForm>
         <Link href="/" className="btn contorno peq bloco" style={{ marginTop: 12 }}><Icone nome="chev_left" tam={14} /> Voltar para o site</Link>

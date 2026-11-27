@@ -5,7 +5,7 @@ import { horarios, planos, reservas, caixa, pagamentos } from "@/db/schema";
 import {
   cadastrarAluno, salvarAnamnese, matricularEmHorario, reservarReposicao, cancelarReserva,
   marcarFalta, garantirAula, ocupacao, vagasDeReposicao, aulasDoAluno, darBaixa, gerarCobrancasDoMes,
-  lancarCaixa, criarPreMatricula, inicioDaAula, RegraError,
+  lancarCaixa, criarPreMatricula, criarFuncionario, trocarSenha, inicioDaAula, RegraError,
 } from "@/lib/servicos";
 
 // Uma quarta-feira futura fixa, para os testes não dependerem do dia em que rodam.
@@ -168,6 +168,15 @@ describe("Financeiro e cadastros gravam no banco", () => {
     expect(await codigoDoErro(lancarCaixa(db, { tipo: "saida", descricao: "Luz", valorCentavos: 0, data: "2030-01-05", usuarioId: null }))).toBe("dados_invalidos");
     await lancarCaixa(db, { tipo: "saida", descricao: "Luz", valorCentavos: 38000, data: "2030-01-05", usuarioId: null });
     expect(await db.select().from(caixa)).toHaveLength(1);
+  });
+
+  it("troca de senha exige a atual e uma nova diferente com 8+ caracteres", async () => {
+    const u = await criarFuncionario(db, { nome: "Teste", email: "t@x.com", senha: "senhainicial1", perfil: "dona" });
+    expect(await codigoDoErro(trocarSenha(db, u.id, "errada123", "outrasenha1"))).toBe("senha_atual");
+    expect(await codigoDoErro(trocarSenha(db, u.id, "senhainicial1", "curta"))).toBe("senha_fraca");
+    expect(await codigoDoErro(trocarSenha(db, u.id, "senhainicial1", "senhainicial1"))).toBe("senha_igual");
+    expect(await codigoDoErro(trocarSenha(db, u.id, "senhainicial1", "outrasenha1"))).toBe("ok");
+    expect(await codigoDoErro(trocarSenha(db, u.id, "senhainicial1", "terceira123"))).toBe("senha_atual");
   });
 
   it("pré-matrícula valida telefone e grava", async () => {

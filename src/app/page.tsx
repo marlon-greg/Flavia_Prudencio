@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CampoEmail, CampoTelefone } from "@/components/Campos";
 import { asc } from "drizzle-orm";
 import { getDb } from "@/db";
 import { planos } from "@/db/schema";
@@ -168,16 +169,16 @@ export default async function Home() {
           <div className="card" style={{ padding: 28 }}>
             <AcaoForm acao={acaoPreMatricula}>
               <div className="campos">
-                <label>Nome completo<input name="nome" required autoComplete="name" placeholder="Seu nome" /></label>
-                <label>Telefone (com DDD)<input name="telefone" required inputMode="tel" placeholder="(19) 99999-0000" /></label>
+                <label>Nome completo<input name="nome" required minLength={3} maxLength={80} autoComplete="name" placeholder="Seu nome" /></label>
+                <label>Telefone (com DDD)<CampoTelefone name="telefone" required /></label>
               </div>
-              <label>E-mail<input name="email" type="email" autoComplete="email" placeholder="voce@email.com" /></label>
+              <label>E-mail<CampoEmail name="email" /></label>
               <label>Interesse
                 <select name="interesse" defaultValue="Pilates">
                   <option>Pilates</option><option>Fisioterapia</option><option>Ainda não sei</option>
                 </select>
               </label>
-              <label>Mensagem<textarea name="mensagem" placeholder="Algum horário de preferência ou restrição de saúde?" /></label>
+              <label>Mensagem<textarea name="mensagem" maxLength={500} placeholder="Algum horário de preferência ou restrição de saúde?" /></label>
               <button className="btn bloco">Enviar pré-matrícula <Icone nome="arrow_right" tam={16} /></button>
             </AcaoForm>
           </div>

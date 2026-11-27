@@ -6,30 +6,23 @@ import { planos, horarios, usuarios } from "../src/db/schema";
 import {
   cadastrarAluno, salvarAnamnese, matricularEmHorario, criarFuncionario, gerarCobrancasDoMes, lancarCaixa, hojeLocal,
 } from "../src/lib/servicos";
+import { recusarBancoReal } from "../src/lib/ambiente";
+import { PLANOS_INICIAIS, gradeInicial } from "./dados-base";
 
 const SENHA = process.env.SEED_SENHA || "studio2026";
 
 async function main() {
+  recusarBancoReal();
   const db = await getDb();
   if ((await db.select({ id: usuarios.id }).from(usuarios).limit(1)).length) {
     console.log("O banco já tem usuários; seed ignorado.");
     return;
   }
 
-  const tabela: [string, number, number][] = [
-    ["Mensal", 1, 15000], ["Mensal", 2, 22000], ["Mensal", 3, 27000],
-    ["Trimestral", 1, 13000], ["Trimestral", 2, 19500], ["Trimestral", 3, 23000],
-    ["Semestral", 1, 12000], ["Semestral", 2, 18000], ["Semestral", 3, 22000],
-    ["Fisioterapia", 1, 9000],
-  ];
-  const ps = await db.insert(planos).values(tabela.map(([modalidade, aulasSemana, precoCentavos]) => ({ modalidade, aulasSemana, precoCentavos }))).returning();
+  const ps = await db.insert(planos).values(PLANOS_INICIAIS).returning();
   const plano = (m: string, n: number) => ps.find(p => p.modalidade === m && p.aulasSemana === n)!.id;
 
-  const horas = ["07:00", "08:00", "09:00", "10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
-  const linhas = [];
-  for (let dia = 1; dia <= 5; dia++) for (const hora of horas) linhas.push({ diaSemana: dia, hora, capacidade: 4 });
-  for (const hora of ["08:00", "09:00", "10:00"]) linhas.push({ diaSemana: 6, hora, capacidade: 4 });
-  const hs = await db.insert(horarios).values(linhas).returning();
+  const hs = await db.insert(horarios).values(gradeInicial()).returning();
   const h = (dia: number, hora: string) => hs.find(x => x.diaSemana === dia && x.hora === hora)!.id;
 
   await criarFuncionario(db, { nome: "Flávia Prudêncio", email: "flavia@studio.local", senha: SENHA, perfil: "dona" });

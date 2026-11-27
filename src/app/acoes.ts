@@ -11,13 +11,30 @@ import { criarSessao, encerrarSessao, exigirPerfil, alunoDaSessao, destinoDoPerf
 import {
   RegraError, criarPreMatricula, salvarAnamnese, cancelarReserva, reservarReposicao, marcarFalta,
   cadastrarAluno, matricularEmHorario, encerrarMatricula, darBaixa, lancarCaixa, gerarCobrancasDoMes,
-  criarFuncionario, definirAtivo, hojeLocal,
+  criarFuncionario, definirAtivo, trocarSenha, hojeLocal,
 } from "@/lib/servicos";
 import { arquivoParaDados } from "@/lib/arquivo";
+import { LIMITE, emailValido, telefoneValido } from "@/lib/campos";
 import type { Estado } from "@/components/AcaoForm";
 
 const txt = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const num = (fd: FormData, k: string) => Number(fd.get(k));
+
+function conferirNome(nome: string) {
+  if (nome.length < 3 || nome.length > LIMITE.nome) throw new RegraError("dados_invalidos", `Informe o nome (de 3 a ${LIMITE.nome} caracteres).`);
+}
+
+function conferirContato(nome: string, telefone: string, email: string) {
+  conferirNome(nome);
+  if (!telefoneValido(telefone)) throw new RegraError("dados_invalidos", "Informe um telefone válido com DDD.");
+  if (email && !emailValido(email)) throw new RegraError("dados_invalidos", "Informe um e-mail válido.");
+}
+
+function limitar(fd: FormData, limites: Record<string, number>) {
+  for (const [k, max] of Object.entries(limites)) {
+    if (txt(fd, k).length > max) throw new RegraError("dados_invalidos", `Texto longo demais (máximo de ${max} caracteres).`);
+  }
+}
 
 /** Executa a ação e transforma erros de regra de negócio em mensagem para a tela. */
 async function tentar(fn: () => Promise<string | void>, caminhos: string[] = []): Promise<Estado> {
@@ -41,6 +58,8 @@ function centavos(v: string) {
 export async function acaoPreMatricula(_: Estado, fd: FormData): Promise<Estado> {
   return tentar(async () => {
     const db = await getDb();
+    conferirContato(txt(fd, "nome"), txt(fd, "telefone"), txt(fd, "email"));
+    limitar(fd, { interesse: LIMITE.curto, mensagem: LIMITE.longo });
     await criarPreMatricula(db, {
       nome: txt(fd, "nome"), telefone: txt(fd, "telefone"), email: txt(fd, "email") || undefined,
       interesse: txt(fd, "interesse") || undefined, mensagem: txt(fd, "mensagem") || undefined,
@@ -65,6 +84,19 @@ export async function acaoSair() {
   redirect("/login");
 }
 
+// ---------- Qualquer usuário logado ----------
+
+export async function acaoTrocarSenha(_: Estado, fd: FormData): Promise<Estado> {
+  const s = await exigirPerfil("aluno", "recepcao", "dona");
+  return tentar(async () => {
+    const nova = txt(fd, "nova");
+    if (nova !== txt(fd, "repetida")) throw new RegraError("senha_diferente", "A repetição não confere com a nova senha.");
+    limitar(fd, { nova: LIMITE.senha });
+    await trocarSenha(await getDb(), s.uid, txt(fd, "atual"), nova);
+    return "Senha alterada. Use a nova senha no próximo acesso.";
+  });
+}
+
 // ---------- Aluno ----------
 
 export async function acaoAnamnese(_: Estado, fd: FormData): Promise<Estado> {
@@ -72,6 +104,7 @@ export async function acaoAnamnese(_: Estado, fd: FormData): Promise<Estado> {
   return tentar(async () => {
     const respostas: Record<string, string> = {};
     for (const [k, v] of fd.entries()) if (typeof v === "string" && !k.startsWith("$")) respostas[k] = v.trim();
+    if (Object.values(respostas).some(v => v.length > LIMITE.longo)) throw new RegraError("dados_invalidos", `Cada resposta pode ter no máximo ${LIMITE.longo} caracteres.`);
     if (!respostas.objetivo) throw new RegraError("dados_invalidos", "Conte qual é o seu objetivo com as aulas.");
     if (respostas.ciente !== "sim") throw new RegraError("dados_invalidos", "Confirme que as informações são verdadeiras.");
     await salvarAnamnese(await getDb(), aluno.id, respostas);
@@ -83,6 +116,7 @@ export async function acaoCancelar(_: Estado, fd: FormData): Promise<Estado> {
   const { aluno } = await alunoDaSessao();
   const r = await tentar(async () => {
     const atestado = await arquivoParaDados(fd.get("atestado"));
+    limitar(fd, { motivo: LIMITE.curto });
     await cancelarReserva(await getDb(), num(fd, "reservaId"), aluno.id, { motivo: txt(fd, "motivo") || undefined, atestado });
   }, ["/portal", "/admin"]);
   if (r?.erro) return r;
@@ -115,7 +149,7 @@ export async function acaoCadastrarAluno(_: Estado, fd: FormData): Promise<Estad
   return tentar(async () => {
     const nome = txt(fd, "nome"); const telefone = txt(fd, "telefone");
     const email = txt(fd, "email"); const senha = txt(fd, "senha");
-    if (!nome || telefone.replace(/\D/g, "").length < 10) throw new RegraError("dados_invalidos", "Informe nome e telefone com DDD.");
+    conferirContato(nome, telefone, email);
     if (email && senha.length < 8) throw new RegraError("senha_fraca", "Para criar o acesso ao portal, a senha precisa ter 8 caracteres ou mais.");
     const db = await getDb();
     if (email) {
@@ -157,6 +191,7 @@ export async function acaoCaixa(_: Estado, fd: FormData): Promise<Estado> {
   const s = await exigirPerfil("recepcao", "dona");
   return tentar(async () => {
     const tipo = txt(fd, "tipo") === "entrada" ? "entrada" : "saida";
+    limitar(fd, { descricao: LIMITE.curto, categoria: LIMITE.curto });
     await lancarCaixa(await getDb(), {
       tipo, descricao: txt(fd, "descricao"), categoria: txt(fd, "categoria") || undefined,
       valorCentavos: centavos(txt(fd, "valor")), data: txt(fd, "data") || hojeLocal(), usuarioId: s.uid,
@@ -188,6 +223,9 @@ export async function acaoCriarFuncionario(_: Estado, fd: FormData): Promise<Est
   await exigirPerfil("dona");
   return tentar(async () => {
     const perfil = txt(fd, "perfil") === "dona" ? "dona" : "recepcao";
+    conferirNome(txt(fd, "nome"));
+    if (!emailValido(txt(fd, "email"))) throw new RegraError("dados_invalidos", "Informe um e-mail válido.");
+    limitar(fd, { senha: LIMITE.senha });
     await criarFuncionario(await getDb(), { nome: txt(fd, "nome"), email: txt(fd, "email"), senha: txt(fd, "senha"), perfil });
     return "Funcionário cadastrado.";
   }, ["/admin"]);

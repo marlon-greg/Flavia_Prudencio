@@ -1,4 +1,5 @@
 import { AcaoForm } from "@/components/AcaoForm";
+import { CampoArquivo } from "@/components/Campos";
 import { Icone } from "@/components/Icone";
 import { acaoCancelar } from "../acoes";
 import { ANTECEDENCIA_MINIMA_MIN } from "@/lib/servicos";
@@ -30,8 +31,8 @@ export function CancelarAula({ aula, agora }: { aula: AulaDoAluno; agora: Date }
               ? <span style={{ color: "var(--danger)" }}>Faltam {min} minutos: o cancelamento só é aceito com atestado.</span>
               : <span className="muted">Com mais de {ANTECEDENCIA_MINIMA_MIN} minutos de antecedência, não precisa de atestado e você pode marcar uma reposição.</span>}
           </p>
-          <label>1. Motivo<input name="motivo" placeholder="Ex.: viagem, consulta médica" /></label>
-          <label>2. Atestado (PDF, JPG ou PNG, até 2 MB){exige ? " — obrigatório" : ""}<input name="atestado" type="file" accept=".pdf,image/*" /></label>
+          <label>1. Motivo<input name="motivo" maxLength={120} placeholder="Ex.: viagem, consulta médica" /></label>
+          <label>2. Atestado (PDF, JPG ou PNG, até 2 MB){exige ? " — obrigatório" : ""}<CampoArquivo name="atestado" required={exige} /></label>
           <button className="btn perigo peq">3. Confirmar cancelamento</button>
         </AcaoForm>
       </div>

@@ -1,4 +1,5 @@
 import { asc, inArray } from "drizzle-orm";
+import { CampoEmail, CampoSenha } from "@/components/Campos";
 import { getDb } from "@/db";
 import { usuarios } from "@/db/schema";
 import { exigirPerfil } from "@/lib/auth";
@@ -37,9 +38,9 @@ export default async function Funcionarios() {
         <div className="card">
           <div className="card-cab"><h2>Novo funcionário</h2></div>
           <AcaoForm acao={acaoCriarFuncionario}>
-            <label>Nome<input name="nome" required /></label>
-            <label>E-mail<input name="email" type="email" required /></label>
-            <label>Senha inicial (8+ caracteres)<input name="senha" type="text" minLength={8} required /></label>
+            <label>Nome<input name="nome" required minLength={3} maxLength={80} /></label>
+            <label>E-mail<CampoEmail name="email" required autoComplete="off" /></label>
+            <label>Senha inicial (8+ caracteres)<CampoSenha name="senha" minLength={8} required autoComplete="new-password" /></label>
             <label>Perfil<select name="perfil"><option value="recepcao">Recepção</option><option value="dona">Proprietária</option></select></label>
             <button className="btn">Cadastrar</button>
           </AcaoForm>

@@ -29,6 +29,18 @@ Usuários criados pelo seed (senha inicial `studio2026`, ou o valor de `SEED_SEN
 | Aluna com anamnese | ana@studio.local |
 | Aluno sem anamnese | bruno@studio.local |
 
+## Teste e real
+
+Cada ambiente tem o seu próprio banco; os dados nunca se misturam.
+
+| Ambiente | Banco | Como preparar |
+|---|---|---|
+| Teste | local (sem `DATABASE_URL`), ou publicação de demonstração com `AMBIENTE=teste` e banco próprio | `npm run seed` e `npx tsx scripts/criar-acessos.ts` |
+| Real | o de produção | `node --env-file=.env.producao --import tsx scripts/preparar-real.ts` (só planos, grade e um Admin) |
+
+No ambiente de teste aparece a faixa "AMBIENTE DE TESTE". Os scripts de dados fictícios recusam o banco real.
+Todo usuário troca a própria senha em "Trocar senha"; o botão "Como testar" abre o guia do perfil.
+
 ## Testes
 
 ```bash
@@ -50,4 +62,4 @@ npm run test:e2e    # navegador: requer o servidor rodando com o banco recém-po
 
 1. Crie um banco no Neon e copie a URL de conexão.
 2. Na Vercel, importe o repositório e defina `DATABASE_URL`, `SESSION_SECRET` e `NEXT_PUBLIC_WHATSAPP`.
-3. As migrações rodam sozinhas na primeira conexão. Para popular, rode `npm run seed` localmente com a `DATABASE_URL` do Neon.
+3. As migrações rodam sozinhas na primeira conexão. Para preparar o banco real, use `scripts/preparar-real.ts` (veja "Teste e real").

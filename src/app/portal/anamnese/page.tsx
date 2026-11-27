@@ -27,7 +27,7 @@ export default async function Anamnese() {
       <div className="card" style={{ padding: 28 }}>
         <AcaoForm acao={acaoAnamnese} limpar={false}>
           {PERGUNTAS.map(([k, q], i) => (
-            <label key={k}><span className="muted">{i + 1}.</span> {q}<textarea name={k} defaultValue={r[k] ?? ""} required={k === "objetivo"} /></label>
+            <label key={k}><span className="muted">{i + 1}.</span> {q}<textarea name={k} maxLength={500} defaultValue={r[k] ?? ""} required={k === "objetivo"} /></label>
           ))}
           <label style={{ display: "flex", alignItems: "center" }}><input type="checkbox" name="ciente" value="sim" defaultChecked={r.ciente === "sim"} required />
             Declaro que as informações acima são verdadeiras.</label>

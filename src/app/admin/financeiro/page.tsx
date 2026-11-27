@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, gte, isNull, lt } from "drizzle-orm";
+import { CampoArquivo, CampoMoeda } from "@/components/Campos";
 import { getDb } from "@/db";
 import { alunos, caixa, pagamentos } from "@/db/schema";
 import { hojeLocal } from "@/lib/servicos";
@@ -64,7 +65,7 @@ export default async function Financeiro({ searchParams }: { searchParams: Promi
                   <input type="hidden" name="pagamentoId" value={p.id} />
                   <div className="campos">
                     <label>Forma<select name="forma"><option>PIX</option><option>Cartão</option><option>Dinheiro</option><option>Transferência</option></select></label>
-                    <label>Comprovante (obrigatório)<input name="comprovante" type="file" accept=".pdf,image/*" required /></label>
+                    <label>Comprovante (obrigatório)<CampoArquivo name="comprovante" required /></label>
                   </div>
                   <button className="btn peq"><Icone nome="check" tam={14} /> Dar baixa</button>
                 </AcaoForm>
@@ -80,10 +81,10 @@ export default async function Financeiro({ searchParams }: { searchParams: Promi
               <label>Tipo<select name="tipo" defaultValue="saida"><option value="saida">Despesa (saída)</option><option value="entrada">Entrada</option></select></label>
               <label>Data<input name="data" type="date" defaultValue={hoje} required /></label>
             </div>
-            <label>Descrição<input name="descricao" required placeholder="Ex.: Conta de luz" /></label>
+            <label>Descrição<input name="descricao" required maxLength={120} placeholder="Ex.: Conta de luz" /></label>
             <div className="campos">
               <label>Categoria<select name="categoria"><option>Aluguel</option><option>Utilidades</option><option>Materiais</option><option>Manutenção</option><option>Salários</option><option>Sessão avulsa</option><option>Outros</option></select></label>
-              <label>Valor (R$)<input name="valor" required inputMode="decimal" placeholder="0,00" /></label>
+              <label>Valor (R$)<CampoMoeda name="valor" required /></label>
             </div>
             <button className="btn">Lançar</button>
           </AcaoForm>

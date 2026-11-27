@@ -30,12 +30,16 @@ export function Estrutura({ tema, nome, detalhe, itens, extras, children }: {
         <Menu itens={itens} />
         <div className="lateral-rodape">
           {extras}
+          <Link className="link-lateral" href="/conta/senha"><Icone nome="badge" tam={16} /> Trocar senha</Link>
           <form action={acaoSair}>
             <button className="link-lateral"><Icone nome="logout" tam={16} /> Sair</button>
           </form>
         </div>
       </aside>
-      <main className="conteudo">{children}</main>
+      <main className="conteudo">
+        <div className="barra-guia"><Link href="/conta/guia" className="btn contorno peq"><Icone nome="file" tam={14} /> Como testar</Link></div>
+        {children}
+      </main>
     </div>
   );
 }

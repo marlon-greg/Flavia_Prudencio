@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CampoEmail, CampoSenha, CampoTelefone } from "@/components/Campos";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { alunos, anamneses, horarios, matriculas, planos } from "@/db/schema";
@@ -33,8 +34,8 @@ export default async function Alunos() {
         <div style={{ marginTop: 16 }}>
           <AcaoForm acao={acaoCadastrarAluno}>
             <div className="campos">
-              <label>Nome<input name="nome" required /></label>
-              <label>Telefone<input name="telefone" required inputMode="tel" /></label>
+              <label>Nome<input name="nome" required minLength={3} maxLength={80} /></label>
+              <label>Telefone<CampoTelefone name="telefone" required autoComplete="off" /></label>
               <label>Plano
                 <select name="planoId" defaultValue="">
                   <option value="">Sem plano</option>
@@ -44,8 +45,8 @@ export default async function Alunos() {
             </div>
             <p className="muted small" style={{ margin: 0 }}>Para o aluno acessar o portal, informe e-mail e uma senha inicial (8+ caracteres).</p>
             <div className="campos">
-              <label>E-mail<input name="email" type="email" /></label>
-              <label>Senha inicial<input name="senha" type="text" minLength={8} /></label>
+              <label>E-mail<CampoEmail name="email" autoComplete="off" /></label>
+              <label>Senha inicial<CampoSenha name="senha" minLength={8} autoComplete="new-password" /></label>
             </div>
             <button className="btn">Cadastrar</button>
           </AcaoForm>
